@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+  moduleFormat    = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String   @id @default(uuid())
+  number     String
+  lastName   String   @map("last_name")
+  firstName  String   @map("first_name")
+  email      String   @unique
+  password   String
+  role       String
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  inscriptions Inscription[]
+
+  @@map("users")
+}
+
+model Mission {
+  id          String   @id @default(uuid())
+  description String
+  title       String
+  status      String
+  location    String
+  type        String
+  date        DateTime
+  isUrgent    Boolean  @default(false) @map("is_urgent")
+  address     String
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  creneaux    Creneau[]
+
+  @@map("missions")
+}
+
+model Creneau {
+  id              String   @id @default(uuid())
+  startAt         DateTime @map("start_at")
+  endAt           DateTime @map("end_at")
+  placeAvailable  Int      @map("place_available")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  missionId String
+  mission   Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+
+  inscriptions Inscription[]
+
+  @@index([missionId])
+  @@map("creneaux")
+}
+
+model Inscription {
+  id         String   @id @default(uuid())
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  creneauId  String
+  creneau    Creneau  @relation(fields: [creneauId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, creneauId])
+  @@index([userId])
+  @@index([creneauId])
+
+  @@map("inscriptions")
+}
