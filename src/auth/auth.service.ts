@@ -33,11 +33,21 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    return this.createTokens({
-      sub: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-    });
+    return {
+      user: {
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        number: user.number,
+        id: user.id,
+      },
+      token: this.createTokens({
+        sub: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      }),
+    };
   }
 
   async register(registerPayload: RegisterDto) {
@@ -58,11 +68,21 @@ export class AuthService {
       role: 'user',
     });
 
-    return this.createTokens({
-      sub: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-    });
+    return {
+      user: {
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        number: user.number,
+        id: user.id,
+      },
+      token: this.createTokens({
+        sub: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      }),
+    };
   }
 
   createTokens(payload: JwtPayload) {
