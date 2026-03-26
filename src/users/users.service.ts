@@ -1,26 +1,80 @@
-import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+
+import { PrismaService } from 'src/db/prisma.service';
+import { Prisma } from 'generated/prisma/client';
 import { UpdateUserDto } from './dto/update-user.dto';
+
+const PUBLIC_USER_FIELDS = {
+  email: true,
+  firstName: true,
+  lastName: true,
+  role: true,
+  number: true,
+};
 
 @Injectable()
 export class UsersService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  constructor(private prisma: PrismaService) {}
+
+  async findAll() {
+    return this.prisma.user.findMany({
+      select: PUBLIC_USER_FIELDS,
+    });
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findOne(email: string) {
+    return this.prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async update(userId: string, user: UpdateUserDto) {
+    await this.findOneByIdOrFail(userId);
+
+    if (user.email) {
+      const emailTaken = await this.prisma.user.findFirst({
+        where: { email: user.email, NOT: { id: userId } },
+      });
+      if (emailTaken) throw new ConflictException('Email already in use');
+    }
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        number: user.number,
+      },
+      select: PUBLIC_USER_FIELDS,
+    });
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async delete(userId: string) {
+    await this.findOneByIdOrFail(userId);
+
+    await this.prisma.user.delete({
+      where: { id: userId },
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async create(data: Prisma.UserCreateInput) {
+    return this.prisma.user.create({
+      data,
+    });
+  }
+
+  private async findOneByIdOrFail(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user) throw new NotFoundException('User not found');
+    return user;
   }
 }
