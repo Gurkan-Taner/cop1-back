@@ -6,6 +6,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './db/prisma.module';
 import { MissionsModule } from './missions/missions.module';
+import { CreneauxModule } from './creneaux/creneaux.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { MissionsModule } from './missions/missions.module';
     AuthModule,
     PrismaModule,
     MissionsModule,
+    CreneauxModule,
   ],
   controllers: [AppController],
   providers: [AppService],

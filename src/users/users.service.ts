@@ -14,6 +14,7 @@ const PUBLIC_USER_FIELDS = {
   lastName: true,
   role: true,
   number: true,
+  id: true,
 };
 
 @Injectable()
@@ -24,6 +25,10 @@ export class UsersService {
     return this.prisma.user.findMany({
       select: PUBLIC_USER_FIELDS,
     });
+  }
+
+  async findOneById(userId: string) {
+    return await this.findOneByIdOrFail(userId);
   }
 
   async findOne(email: string) {
@@ -73,6 +78,7 @@ export class UsersService {
   private async findOneByIdOrFail(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
+      select: PUBLIC_USER_FIELDS,
     });
     if (!user) throw new NotFoundException('User not found');
     return user;

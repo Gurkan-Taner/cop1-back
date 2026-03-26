@@ -22,8 +22,13 @@ export class MissionsController {
   constructor(private readonly missionsService: MissionsService) {}
 
   @Get('/')
-  async getMissions() {
+  async getMissionsList() {
     return await this.missionsService.getAll();
+  }
+
+  @Get('/:id')
+  async getMission(@Param('id') id: string) {
+    return await this.missionsService.get(id);
   }
 
   @Post('/')

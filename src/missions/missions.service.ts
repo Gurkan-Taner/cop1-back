@@ -16,6 +16,10 @@ export class MissionsService {
     });
   }
 
+  async get(missionId: string) {
+    return await this.findOneByIdOrFail(missionId);
+  }
+
   async delete(missionId: string) {
     await this.findOneByIdOrFail(missionId);
 

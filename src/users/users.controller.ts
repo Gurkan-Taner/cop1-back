@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Put,
   Req,
   UseGuards,
@@ -19,8 +20,18 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get('/')
-  async getUsers() {
+  async getUsersList() {
     return await this.usersService.findAll();
+  }
+
+  @Get('/me')
+  async getMe(@Req() req) {
+    return await this.usersService.findOneById(req.user['sub']);
+  }
+
+  @Get('/:id')
+  async getUser(@Param('id') id: string) {
+    return await this.usersService.findOneById(id);
   }
 
   @Put('/')
