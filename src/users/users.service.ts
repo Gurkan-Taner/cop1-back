@@ -8,7 +8,7 @@ import { PrismaService } from 'src/db/prisma.service';
 import { Prisma } from 'generated/prisma/client';
 import { UpdateUserDto } from './dto/update-user.dto';
 
-const PUBLIC_USER_FIELDS = {
+export const PUBLIC_USER_FIELDS = {
   email: true,
   firstName: true,
   lastName: true,

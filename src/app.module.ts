@@ -6,7 +6,8 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './db/prisma.module';
 import { MissionsModule } from './missions/missions.module';
-import { CreneauxModule } from './creneaux/creneaux.module';
+import { CreneauxModule } from './missions/slots/slots.module';
+import { InscriptionsModule } from './registrations/registrations.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { CreneauxModule } from './creneaux/creneaux.module';
     PrismaModule,
     MissionsModule,
     CreneauxModule,
+    InscriptionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -29,7 +29,7 @@ CREATE TABLE "missions" (
 );
 
 -- CreateTable
-CREATE TABLE "creneaux" (
+CREATE TABLE "slots" (
     "id" TEXT NOT NULL,
     "start_at" TIMESTAMP(3) NOT NULL,
     "end_at" TIMESTAMP(3) NOT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE "creneaux" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "missionId" TEXT NOT NULL,
 
-    CONSTRAINT "creneaux_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "slots_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -45,7 +45,7 @@ CREATE TABLE "inscriptions" (
     "id" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userId" TEXT NOT NULL,
-    "creneauId" TEXT NOT NULL,
+    "slotId" TEXT NOT NULL,
 
     CONSTRAINT "inscriptions_pkey" PRIMARY KEY ("id")
 );
@@ -54,22 +54,22 @@ CREATE TABLE "inscriptions" (
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
-CREATE INDEX "creneaux_missionId_idx" ON "creneaux"("missionId");
+CREATE INDEX "slots_missionId_idx" ON "slots"("missionId");
 
 -- CreateIndex
 CREATE INDEX "inscriptions_userId_idx" ON "inscriptions"("userId");
 
 -- CreateIndex
-CREATE INDEX "inscriptions_creneauId_idx" ON "inscriptions"("creneauId");
+CREATE INDEX "inscriptions_slotId_idx" ON "inscriptions"("slotId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "inscriptions_userId_creneauId_key" ON "inscriptions"("userId", "creneauId");
+CREATE UNIQUE INDEX "inscriptions_userId_slotId_key" ON "inscriptions"("userId", "slotId");
 
 -- AddForeignKey
-ALTER TABLE "creneaux" ADD CONSTRAINT "creneaux_missionId_fkey" FOREIGN KEY ("missionId") REFERENCES "missions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "slots" ADD CONSTRAINT "slots_missionId_fkey" FOREIGN KEY ("missionId") REFERENCES "missions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "inscriptions" ADD CONSTRAINT "inscriptions_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "inscriptions" ADD CONSTRAINT "inscriptions_creneauId_fkey" FOREIGN KEY ("creneauId") REFERENCES "creneaux"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "inscriptions" ADD CONSTRAINT "inscriptions_slotId_fkey" FOREIGN KEY ("slotId") REFERENCES "slots"("id") ON DELETE CASCADE ON UPDATE CASCADE;

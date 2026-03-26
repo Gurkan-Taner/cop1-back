@@ -43,12 +43,12 @@ model Mission {
   address     String
   createdAt   DateTime @default(now()) @map("created_at")
 
-  creneaux    Creneau[]
+  slots    Slot[]
 
   @@map("missions")
 }
 
-model Creneau {
+model Slot {
   id              String   @id @default(uuid())
   startAt         DateTime @map("start_at")
   endAt           DateTime @map("end_at")
@@ -61,7 +61,7 @@ model Creneau {
   inscriptions Inscription[]
 
   @@index([missionId])
-  @@map("creneaux")
+  @@map("slots")
 }
 
 model Inscription {
@@ -71,12 +71,12 @@ model Inscription {
   userId     String
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  creneauId  String
-  creneau    Creneau  @relation(fields: [creneauId], references: [id], onDelete: Cascade)
+  slotId  String
+  slot    Slot  @relation(fields: [slotId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, creneauId])
+  @@unique([userId, slotId])
   @@index([userId])
-  @@index([creneauId])
+  @@index([slotId])
 
   @@map("inscriptions")
 }

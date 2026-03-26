@@ -17,7 +17,28 @@ export class MissionsService {
   }
 
   async get(missionId: string) {
-    return await this.findOneByIdOrFail(missionId);
+    const mission = await this.prisma.mission.findUnique({
+      where: { id: missionId },
+      include: {
+        slots: {
+          include: {
+            inscriptions: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    firstName: true,
+                    number: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+    if (!mission) throw new NotFoundException('Mission not found');
+    return mission;
   }
 
   async delete(missionId: string) {
