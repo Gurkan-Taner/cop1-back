@@ -38,7 +38,7 @@ model Mission {
   status      String
   location    String
   type        String
-  date        DateTime
+  date        String
   isUrgent    Boolean  @default(false) @map("is_urgent")
   address     String
   createdAt   DateTime @default(now()) @map("created_at")
