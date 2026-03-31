@@ -19,7 +19,7 @@ CREATE TABLE "missions" (
     "title" TEXT NOT NULL,
     "status" TEXT NOT NULL,
     "location" TEXT NOT NULL,
-    "type" TEXT NOT NULL,
+    "category" TEXT NOT NULL,
     "date" TEXT NOT NULL,
     "is_urgent" BOOLEAN NOT NULL DEFAULT false,
     "address" TEXT NOT NULL,

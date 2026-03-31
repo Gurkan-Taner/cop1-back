@@ -37,7 +37,7 @@ model Mission {
   title       String
   status      String
   location    String
-  type        String
+  category        String
   date        String
   isUrgent    Boolean  @default(false) @map("is_urgent")
   address     String
