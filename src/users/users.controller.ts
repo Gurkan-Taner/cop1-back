@@ -13,19 +13,24 @@ import {
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import type { UpdateUserDto } from './dto/update-user.dto';
+import { Roles } from 'src/auth/decorators/role.decorator';
+import { Role } from 'src/auth/enum/role.enum';
+import { RolesGuard } from 'src/auth/guards/role.guard';
+import { JwtPayload } from 'src/auth/types';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('/api/users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get('/')
+  @Roles(Role.Admin)
   async getUsersList() {
     return await this.usersService.findAll();
   }
 
   @Get('/me')
-  async getMe(@Req() req) {
+  async getMe(@Req() req: { user: JwtPayload }) {
     return await this.usersService.findOneById(req.user['sub']);
   }
 
@@ -35,13 +40,16 @@ export class UsersController {
   }
 
   @Put('/')
-  async updateUser(@Body() updateUserDto: UpdateUserDto, @Req() req) {
+  async updateUser(
+    @Body() updateUserDto: UpdateUserDto,
+    @Req() req: { user: JwtPayload },
+  ) {
     return await this.usersService.update(req.user['sub'], updateUserDto);
   }
 
   @Delete('/')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteUser(@Req() req) {
+  async deleteUser(@Req() req: { user: JwtPayload }) {
     return await this.usersService.delete(req.user['sub']);
   }
 }

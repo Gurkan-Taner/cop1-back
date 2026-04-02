@@ -44,8 +44,8 @@ export class AuthService {
       },
       token: this.createTokens({
         sub: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
       }),
     };
   }
@@ -79,8 +79,8 @@ export class AuthService {
       },
       token: this.createTokens({
         sub: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
       }),
     };
   }

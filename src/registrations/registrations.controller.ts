@@ -11,13 +11,17 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { RegistrationsService } from './registrations.service';
+import { RolesGuard } from 'src/auth/guards/role.guard';
+import { Roles } from 'src/auth/decorators/role.decorator';
+import { Role } from 'src/auth/enum/role.enum';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('/api/missions/:missionId/slots/:slotId/inscriptions')
 export class RegistrationsController {
   constructor(private readonly registrationsService: RegistrationsService) {}
 
   @Get('/')
+  @Roles(Role.Admin)
   async getInscriptions(@Param('slotId') slotId: string) {
     return await this.registrationsService.getUsersBySlot(slotId);
   }

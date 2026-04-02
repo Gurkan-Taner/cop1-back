@@ -51,6 +51,9 @@ export class AuthController {
   @Post('/logout')
   @HttpCode(HttpStatus.NO_CONTENT)
   async logout(@Res({ passthrough: true }) response: FastifyReply) {
-    response.setCookie('access_token', '', { ...COOKIE_OPTIONS, maxAge: 0 });
+    await response.setCookie('access_token', '', {
+      ...COOKIE_OPTIONS,
+      maxAge: 0,
+    });
   }
 }

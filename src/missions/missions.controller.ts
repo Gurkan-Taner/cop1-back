@@ -15,8 +15,11 @@ import { MissionsService } from './missions.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import type { CreateMissionDto } from './dto/create-mission.dto';
 import type { UpdateMissionDto } from './dto/update-mission.dto';
+import { RolesGuard } from 'src/auth/guards/role.guard';
+import { Roles } from 'src/auth/decorators/role.decorator';
+import { Role } from 'src/auth/enum/role.enum';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('/api/missions')
 export class MissionsController {
   constructor(private readonly missionsService: MissionsService) {}
@@ -32,11 +35,13 @@ export class MissionsController {
   }
 
   @Post('/')
+  @Roles(Role.Admin)
   async createMission(@Body() createMissionDto: CreateMissionDto) {
     return await this.missionsService.create(createMissionDto);
   }
 
   @Put('/:id')
+  @Roles(Role.Admin)
   @HttpCode(HttpStatus.OK)
   async updateMission(
     @Body() updateMissionDto: UpdateMissionDto,
@@ -46,6 +51,7 @@ export class MissionsController {
   }
 
   @Delete('/:id')
+  @Roles(Role.Admin)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteMission(@Param('id') id: string) {
     return await this.missionsService.delete(id);

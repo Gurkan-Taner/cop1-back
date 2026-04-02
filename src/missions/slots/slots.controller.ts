@@ -14,8 +14,11 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { SlotsService } from './slots.service';
 import type { CreateSlotDto } from './dto/create-slot.dto';
 import type { UpdateSlotDto } from './dto/update-slot.dto';
+import { RolesGuard } from 'src/auth/guards/role.guard';
+import { Roles } from 'src/auth/decorators/role.decorator';
+import { Role } from 'src/auth/enum/role.enum';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('/api/missions/:missionId/slots')
 export class SlotsController {
   constructor(private readonly slotsService: SlotsService) {}
@@ -34,6 +37,7 @@ export class SlotsController {
   }
 
   @Post('/')
+  @Roles(Role.Admin)
   async createSlot(
     @Param('missionId') missionId: string,
     @Body() createSlotDto: CreateSlotDto,
@@ -42,6 +46,7 @@ export class SlotsController {
   }
 
   @Put('/:id')
+  @Roles(Role.Admin)
   @HttpCode(HttpStatus.OK)
   async updateSlot(
     @Param('missionId') missionId: string,
@@ -52,8 +57,9 @@ export class SlotsController {
   }
 
   @Delete('/:id')
+  @Roles(Role.Admin)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteCreneau(
+  async deleteSlot(
     @Param('missionId') missionId: string,
     @Param('id') id: string,
   ) {
