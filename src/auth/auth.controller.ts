@@ -8,8 +8,11 @@ import {
 } from '@nestjs/common';
 import type { FastifyReply } from 'fastify';
 import { AuthService } from './auth.service';
+
 import type { LoginDto } from './dto/login.dto';
 import type { RegisterDto } from './dto/register.dto';
+
+import { Public } from './decorators/public.decorator';
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -23,6 +26,7 @@ const COOKIE_OPTIONS = {
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @Public()
   @Post('/login')
   @HttpCode(HttpStatus.OK)
   async login(
@@ -35,6 +39,7 @@ export class AuthController {
     return { message: 'Logged in successfully', data: user };
   }
 
+  @Public()
   @Post('/register')
   @HttpCode(HttpStatus.CREATED)
   async register(

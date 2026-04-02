@@ -11,14 +11,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import type { UpdateUserDto } from './dto/update-user.dto';
 import { Roles } from 'src/auth/decorators/role.decorator';
 import { Role } from 'src/auth/enum/role.enum';
 import { RolesGuard } from 'src/auth/guards/role.guard';
 import { JwtPayload } from 'src/auth/types';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 @Controller('/api/users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}

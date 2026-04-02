@@ -10,7 +10,7 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
+
 import { SlotsService } from './slots.service';
 import type { CreateSlotDto } from './dto/create-slot.dto';
 import type { UpdateSlotDto } from './dto/update-slot.dto';
@@ -18,7 +18,7 @@ import { RolesGuard } from 'src/auth/guards/role.guard';
 import { Roles } from 'src/auth/decorators/role.decorator';
 import { Role } from 'src/auth/enum/role.enum';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 @Controller('/api/missions/:missionId/slots')
 export class SlotsController {
   constructor(private readonly slotsService: SlotsService) {}
