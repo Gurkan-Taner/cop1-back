@@ -6,7 +6,7 @@ export const createMissionSchema = z.object({
   status: z.string().max(20),
   location: z.string().max(40),
   category: z.string().max(30),
-  date: z.string().max(30),
+  date: z.date(),
   isUrgent: z.boolean(),
   address: z.string().max(50),
 });

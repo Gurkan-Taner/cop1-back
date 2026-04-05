@@ -20,7 +20,7 @@ CREATE TABLE "missions" (
     "status" TEXT NOT NULL,
     "location" TEXT NOT NULL,
     "category" TEXT NOT NULL,
-    "date" TEXT NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL,
     "is_urgent" BOOLEAN NOT NULL DEFAULT false,
     "address" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
