@@ -8,7 +8,7 @@ services:
     env_file:
       - .env
     expose:
-      - '3000'
+      - '3002:3000'
     labels:
       - 'traefik.enable=true'
       - 'traefik.http.routers.cop1.rule=Host(`cop1.gurkan-taner.fr`)'

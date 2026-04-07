@@ -17,7 +17,16 @@ async function bootstrap() {
   });
   app.enableCors({
     origin: ['http://localhost:3002', 'https://cop1-omega.vercel.app'],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'Accept',
+    ],
     credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   });
   await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
 }
