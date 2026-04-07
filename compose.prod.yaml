@@ -1,0 +1,56 @@
+services:
+  nest:
+    build:
+      context: .
+      target: runner
+      dockerfile: ./Dockerfile.prod
+    container_name: nest-backend-prod
+    restart: unless-stopped
+    expose:
+      - '3000'
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.cop1.rule=Host(`cop1.gurkan-taner.fr`)'
+      - 'traefik.http.routers.cop1.entrypoints=websecure'
+      - 'traefik.http.routers.cop1.tls.certresolver=letsencrypt'
+      - 'traefik.http.services.cop1.loadbalancer.server.port=3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_NAME: ${DATABASE_NAME}
+      NODE_ENV: production
+    networks:
+      - traefik-net
+      - backend-net
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: cop1-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend-net
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DATABASE_USER} -d ${DATABASE_NAME}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  traefik-net:
+    external: true
+  backend-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
