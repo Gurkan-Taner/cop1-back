@@ -16,7 +16,7 @@ async function bootstrap() {
     secret: process.env.COOKIE_SECRET,
   });
   app.enableCors({
-    origin: ['https://cop1.gurkan-taner.fr'],
+    origin: ['https://cop1.gurkan-taner.fr', 'http://localhost:3001'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: [
       'Content-Type',
