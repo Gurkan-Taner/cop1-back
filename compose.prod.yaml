@@ -8,7 +8,7 @@ services:
     env_file:
       - .env
     expose:
-      - '3002:3000'
+      - '3000'
     labels:
       - 'traefik.enable=true'
       - 'traefik.http.routers.cop1.rule=Host(`cop1.gurkan-taner.fr`)'
@@ -29,7 +29,7 @@ services:
       DATABASE_NAME: ${DATABASE_NAME}
       NODE_ENV: production
     networks:
-      # - traefik-net
+      - traefik-net
       - backend-net
 
   postgres:
@@ -51,8 +51,8 @@ services:
       retries: 5
 
 networks:
-  # traefik-net:
-  #   external: true
+  traefik-net:
+    external: true
   backend-net:
     driver: bridge
 
