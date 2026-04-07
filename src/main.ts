@@ -16,7 +16,7 @@ async function bootstrap() {
     secret: process.env.COOKIE_SECRET,
   });
   app.enableCors({
-    origin: ['https://cop1-omega.vercel.app'],
+    origin: ['https://cop1.gurkan-taner.fr'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: [
       'Content-Type',
