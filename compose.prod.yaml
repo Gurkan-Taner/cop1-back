@@ -3,8 +3,10 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile.prod
-    container_name: nest-backend-prod
+    container_name: cop1-backend
     restart: unless-stopped
+    env_file:
+      - .env
     expose:
       - '3000'
     labels:
@@ -27,7 +29,7 @@ services:
       DATABASE_NAME: ${DATABASE_NAME}
       NODE_ENV: production
     networks:
-      - traefik-net
+      # - traefik-net
       - backend-net
 
   postgres:
@@ -49,8 +51,8 @@ services:
       retries: 5
 
 networks:
-  traefik-net:
-    external: true
+  # traefik-net:
+  #   external: true
   backend-net:
     driver: bridge
 
