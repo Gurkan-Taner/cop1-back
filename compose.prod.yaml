@@ -2,7 +2,6 @@ services:
   nest:
     build:
       context: .
-      target: runner
       dockerfile: ./Dockerfile.prod
     container_name: nest-backend-prod
     restart: unless-stopped
