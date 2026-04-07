@@ -16,7 +16,7 @@ async function bootstrap() {
     secret: process.env.COOKIE_SECRET,
   });
   app.enableCors({
-    origin: ['http://localhost:3002', 'https://cop1-omega.vercel.app'],
+    origin: ['https://cop1-omega.vercel.app'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: [
       'Content-Type',

@@ -17,7 +17,7 @@ import { Public } from './decorators/public.decorator';
 const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: 'none',
+  sameSite: 'lax',
   path: '/',
   maxAge: 60 * 60,
 } as const;
