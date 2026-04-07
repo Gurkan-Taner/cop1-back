@@ -6,12 +6,15 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Post,
   Put,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import type { UpdateUserDto } from './dto/update-user.dto';
+import type { ResetPasswordDto } from './dto/reset-password.dto';
+
 import { Roles } from 'src/auth/decorators/role.decorator';
 import { Role } from 'src/auth/enum/role.enum';
 import { RolesGuard } from 'src/auth/guards/role.guard';
@@ -36,6 +39,17 @@ export class UsersController {
   @Get('/:id')
   async getUser(@Param('id') id: string) {
     return await this.usersService.findOneById(id);
+  }
+
+  @Post('/reset-password')
+  async resetPassword(
+    @Body() resetPasswordDto: ResetPasswordDto,
+    @Req() req: { user: JwtPayload },
+  ) {
+    return await this.usersService.resetPassword(
+      req.user['sub'],
+      resetPasswordDto,
+    );
   }
 
   @Put('/')
