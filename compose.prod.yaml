@@ -14,7 +14,7 @@ services:
       - 'traefik.http.routers.cop1.tls.certresolver=letsencrypt'
       - 'traefik.http.services.cop1.loadbalancer.server.port=3000'
     command: >
-      sh -c "npx prisma migrate deploy && node dist/main"
+      sh -c "npx prisma migrate deploy && node dist/src/main"
     depends_on:
       postgres:
         condition: service_healthy
