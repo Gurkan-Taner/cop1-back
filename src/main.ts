@@ -16,7 +16,7 @@ async function bootstrap() {
     secret: process.env.COOKIE_SECRET,
   });
   app.enableCors({
-    origin: ['http://localhost:3000'],
+    origin: ['http://localhost:3002', 'https://cop1-omega.vercel.app'],
     credentials: true,
   });
   await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
