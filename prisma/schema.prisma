@@ -27,6 +27,7 @@ model User {
   createdAt  DateTime @default(now()) @map("created_at")
 
   inscriptions Inscription[]
+  passwordResetTokens PasswordResetToken[]
 
   @@map("users")
 }
@@ -79,4 +80,15 @@ model Inscription {
   @@index([slotId])
 
   @@map("inscriptions")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("password_reset_tokens")
 }

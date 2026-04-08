@@ -115,6 +115,26 @@ export class UsersService {
     });
   }
 
+  async findOneByEmail(email: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { email: email },
+      select: PUBLIC_USER_FIELDS,
+    });
+    if (!user) throw new NotFoundException('User not found');
+    return user;
+  }
+
+  async updatePassword(userId: string, password: string) {
+    await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        password,
+      },
+    });
+  }
+
   private async findOneByIdOrFail(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
