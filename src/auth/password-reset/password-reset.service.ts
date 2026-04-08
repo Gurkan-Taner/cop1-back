@@ -5,12 +5,14 @@ import { createHash, randomBytes } from 'crypto';
 import { PrismaService } from 'src/db/prisma.service';
 import { UsersService } from 'src/users/users.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class PasswordResetService {
   constructor(
     private readonly usersService: UsersService,
     private readonly prisma: PrismaService,
+    private readonly mailService: MailService,
   ) {}
 
   async requestReset(email: string): Promise<void> {
@@ -35,9 +37,8 @@ export class PasswordResetService {
     });
 
     const resetUrl = `https://cop1.gurkan-taner.fr/reset-password/${rawToken}`;
-    console.log('resetUrl', resetUrl);
 
-    // await this.mailService.sendPasswordReset(user.email, resetUrl);
+    void this.mailService.sendPasswordReset(user.email, resetUrl);
   }
 
   async resetPassword(dto: ResetPasswordDto): Promise<void> {
