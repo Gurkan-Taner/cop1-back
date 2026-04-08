@@ -23,7 +23,7 @@ RUN addgroup -S nodejs && adduser -S nestjs -G nodejs
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/dist/mail/templates ./dist/mail/templates
+COPY --from=builder /app/dist/src/mail/templates ./dist/src/mail/templates
 COPY --from=builder /app/prisma ./prisma
 
 COPY --from=builder /app/generated ./generated 
