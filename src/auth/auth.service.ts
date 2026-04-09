@@ -11,11 +11,10 @@ import { UsersService } from '../users/users.service';
 import { JwtPayload } from './types';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { passwordSalt } from 'src/global/constants/salt.constants';
 
 @Injectable()
 export class AuthService {
-  private saltOrRounds: number = 5;
-
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
@@ -64,10 +63,7 @@ export class AuthService {
       throw new ConflictException('Email already in use');
     }
 
-    const hashedPassword = await hash(
-      registerPayload.password,
-      this.saltOrRounds,
-    );
+    const hashedPassword = await hash(registerPayload.password, passwordSalt);
 
     const user = await this.usersService.create({
       ...registerPayload,

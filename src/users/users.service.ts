@@ -10,6 +10,7 @@ import { Prisma } from 'generated/prisma/client';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { compare, hash } from 'bcrypt';
+import { passwordSalt } from 'src/global/constants/salt.constants';
 
 export const PUBLIC_USER_FIELDS = {
   email: true,
@@ -22,8 +23,6 @@ export const PUBLIC_USER_FIELDS = {
 
 @Injectable()
 export class UsersService {
-  private saltOrRounds: number = 5;
-
   constructor(private prisma: PrismaService) {}
 
   async findAll() {
@@ -101,10 +100,7 @@ export class UsersService {
       throw new BadRequestException("Old password isn't valid");
     }
 
-    const newPassword = await hash(
-      resetPasswordDto.newPassword,
-      this.saltOrRounds,
-    );
+    const newPassword = await hash(resetPasswordDto.newPassword, passwordSalt);
 
     return this.prisma.user.update({
       where: { id: userId },

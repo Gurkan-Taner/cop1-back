@@ -17,14 +17,10 @@ import type { RegisterDto } from './dto/register.dto';
 import { Public } from './decorators/public.decorator';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { JwtPayload, JwtRefreshPayload } from './types';
-
-const COOKIE_OPTIONS = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax',
-  path: '/',
-  maxAge: 60 * 60,
-} as const;
+import {
+  ACCESS_COOKIE_OPTIONS,
+  REFRESH_COOKIE_OPTIONS,
+} from 'src/global/constants/cookies.constants';
 
 @Controller('auth')
 export class AuthController {
@@ -38,8 +34,16 @@ export class AuthController {
     @Res({ passthrough: true }) response: FastifyReply,
   ) {
     const { tokens, user } = await this.authService.login(loginPayload);
-    response.setCookie('access_token', tokens.access_token, COOKIE_OPTIONS);
-    response.setCookie('refresh_token', tokens.refresh_token, COOKIE_OPTIONS);
+    response.setCookie(
+      'access_token',
+      tokens.access_token,
+      ACCESS_COOKIE_OPTIONS,
+    );
+    response.setCookie(
+      'refresh_token',
+      tokens.refresh_token,
+      REFRESH_COOKIE_OPTIONS,
+    );
 
     return { message: 'Logged in successfully', data: user };
   }
@@ -53,8 +57,16 @@ export class AuthController {
   ) {
     const { tokens, user } = await this.authService.register(registerPayload);
 
-    response.setCookie('access_token', tokens.access_token, COOKIE_OPTIONS);
-    response.setCookie('refresh_token', tokens.refresh_token, COOKIE_OPTIONS);
+    response.setCookie(
+      'access_token',
+      tokens.access_token,
+      ACCESS_COOKIE_OPTIONS,
+    );
+    response.setCookie(
+      'refresh_token',
+      tokens.refresh_token,
+      REFRESH_COOKIE_OPTIONS,
+    );
 
     return { message: 'Registered successfully', data: user };
   }
@@ -72,8 +84,16 @@ export class AuthController {
       req.user.refreshToken,
     );
 
-    response.setCookie('access_token', tokens.access_token, COOKIE_OPTIONS);
-    response.setCookie('refresh_token', tokens.refresh_token, COOKIE_OPTIONS);
+    response.setCookie(
+      'access_token',
+      tokens.access_token,
+      ACCESS_COOKIE_OPTIONS,
+    );
+    response.setCookie(
+      'refresh_token',
+      tokens.refresh_token,
+      REFRESH_COOKIE_OPTIONS,
+    );
   }
 
   @Post('/logout')
@@ -84,7 +104,11 @@ export class AuthController {
   ) {
     await this.authService.logout(req.user.sub);
     await response.setCookie('access_token', '', {
-      ...COOKIE_OPTIONS,
+      ...ACCESS_COOKIE_OPTIONS,
+      maxAge: 0,
+    });
+    await response.setCookie('refresh_token', '', {
+      ...REFRESH_COOKIE_OPTIONS,
       maxAge: 0,
     });
   }
