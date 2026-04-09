@@ -11,6 +11,7 @@ import { AuthController } from './auth.controller';
 import { PasswordResetController } from './password-reset/password-reset.controller';
 import { PasswordResetService } from './password-reset/password-reset.service';
 import { MailModule } from 'src/mail/mail.module';
+import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 
 @Module({
   imports: [
@@ -29,7 +30,13 @@ import { MailModule } from 'src/mail/mail.module';
     }),
   ],
   controllers: [AuthController, PasswordResetController],
-  providers: [AuthService, UsersService, JwtStrategy, PasswordResetService],
+  providers: [
+    AuthService,
+    UsersService,
+    JwtStrategy,
+    PasswordResetService,
+    JwtRefreshStrategy,
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}

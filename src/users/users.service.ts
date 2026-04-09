@@ -22,7 +22,7 @@ export const PUBLIC_USER_FIELDS = {
 
 @Injectable()
 export class UsersService {
-  private saltOrRounds: number = 10;
+  private saltOrRounds: number = 5;
 
   constructor(private prisma: PrismaService) {}
 
@@ -142,5 +142,29 @@ export class UsersService {
     });
     if (!user) throw new NotFoundException('User not found');
     return user;
+  }
+
+  async findOneByIdWithRefresh(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, role: true, refreshToken: true },
+    });
+    if (!user) throw new NotFoundException('User not found');
+    return user;
+  }
+
+  async saveRefreshToken(userId: string, refreshToken: string) {
+    const hashed = await hash(refreshToken, 3);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { refreshToken: hashed },
+    });
+  }
+
+  async clearRefreshToken(userId: string) {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { refreshToken: null },
+    });
   }
 }

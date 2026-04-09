@@ -3,6 +3,7 @@ import {
   UnauthorizedException,
   ConflictException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { hash, compare } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 
@@ -13,11 +14,12 @@ import { RegisterDto } from './dto/register.dto';
 
 @Injectable()
 export class AuthService {
-  private saltOrRounds: number = 10;
+  private saltOrRounds: number = 5;
 
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
 
   async login(loginPayload: LoginDto) {
@@ -33,6 +35,12 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    const { access_token, refresh_token } = await this.createTokens({
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    });
+
     return {
       user: {
         email: user.email,
@@ -42,11 +50,10 @@ export class AuthService {
         number: user.number,
         id: user.id,
       },
-      token: this.createTokens({
-        sub: user.id,
-        email: user.email,
-        role: user.role,
-      }),
+      tokens: {
+        access_token,
+        refresh_token,
+      },
     };
   }
 
@@ -68,6 +75,14 @@ export class AuthService {
       role: 'user',
     });
 
+    const { access_token, refresh_token } = await this.createTokens({
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    });
+
+    await this.usersService.saveRefreshToken(user.id, refresh_token);
+
     return {
       user: {
         email: user.email,
@@ -77,17 +92,47 @@ export class AuthService {
         number: user.number,
         id: user.id,
       },
-      token: this.createTokens({
-        sub: user.id,
-        email: user.email,
-        role: user.role,
-      }),
+      tokens: {
+        access_token,
+        refresh_token,
+      },
     };
   }
 
-  createTokens(payload: JwtPayload) {
-    return {
-      access_token: this.jwtService.sign(payload),
-    };
+  async refresh(userId: string, refreshToken: string) {
+    const user = await this.usersService.findOneByIdWithRefresh(userId);
+
+    if (!user?.refreshToken) throw new UnauthorizedException('Access denied');
+
+    const tokenValid = await compare(refreshToken, user.refreshToken);
+    if (!tokenValid) throw new UnauthorizedException('Access denied');
+
+    const tokens = await this.createTokens({
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    });
+
+    await this.usersService.saveRefreshToken(user.id, tokens.refresh_token);
+
+    return tokens;
+  }
+
+  async createTokens(payload: JwtPayload) {
+    const [access_token, refresh_token] = await Promise.all([
+      this.jwtService.signAsync(payload),
+      this.jwtService.signAsync(payload, {
+        secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
+        expiresIn: this.configService.getOrThrow<number>(
+          'JWT_REFRESH_EXPIRES_IN',
+        ),
+      }),
+    ]);
+
+    return { access_token, refresh_token };
+  }
+
+  async logout(userId: string) {
+    await this.usersService.clearRefreshToken(userId);
   }
 }
