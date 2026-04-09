@@ -37,6 +37,8 @@ export class AuthService {
       role: user.role,
     });
 
+    await this.usersService.updateRefreshToken(user.id, refresh_token);
+
     return {
       user: {
         email: user.email,

@@ -74,7 +74,7 @@ export class AuthController {
   @Public()
   @UseGuards(JwtRefreshGuard)
   @Post('/refresh')
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.OK)
   async refresh(
     @Req() req: { user: JwtRefreshPayload },
     @Res({ passthrough: true }) response: FastifyReply,
@@ -94,6 +94,8 @@ export class AuthController {
       tokens.refresh_token,
       REFRESH_COOKIE_OPTIONS,
     );
+
+    return tokens;
   }
 
   @Post('/logout')
