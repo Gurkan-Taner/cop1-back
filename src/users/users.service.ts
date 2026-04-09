@@ -4,163 +4,141 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-
 import { PrismaService } from 'src/db/prisma.service';
 import { Prisma } from 'generated/prisma/client';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { compare, hash } from 'bcrypt';
-import { passwordSalt } from 'src/global/constants/salt.constants';
+import { passwordSalt, tokenSalt } from 'src/global/constants/salt.constants';
+import { RegisterDto } from 'src/auth/dto/register.dto';
 
-export const PUBLIC_USER_FIELDS = {
+export const PUBLIC_USER_FIELDS: Prisma.UserSelect = {
+  id: true,
   email: true,
   firstName: true,
   lastName: true,
   role: true,
   number: true,
-  id: true,
+};
+
+export const AUTH_REFRESH_FIELDS: Prisma.UserSelect = {
+  ...PUBLIC_USER_FIELDS,
+  refreshToken: true,
 };
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async findAll() {
-    return this.prisma.user.findMany({
-      select: PUBLIC_USER_FIELDS,
-    });
+    return this.prisma.user.findMany({ select: PUBLIC_USER_FIELDS });
   }
 
-  async findOneById(userId: string) {
-    return await this.findOneByIdOrFail(userId);
-  }
-
-  async findOne(email: string) {
-    return this.prisma.user.findUnique({
-      where: {
-        email,
-      },
-    });
-  }
-
-  async update(userId: string, user: UpdateUserDto) {
-    await this.findOneByIdOrFail(userId);
-
-    if (user.email) {
-      const emailTaken = await this.prisma.user.findFirst({
-        where: { email: user.email, NOT: { id: userId } },
-      });
-      if (emailTaken) throw new ConflictException('Email already in use');
-    }
-
-    return this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        number: user.number,
-      },
-      select: PUBLIC_USER_FIELDS,
-    });
-  }
-
-  async delete(userId: string) {
-    await this.findOneByIdOrFail(userId);
-
-    await this.prisma.user.delete({
-      where: { id: userId },
-    });
-  }
-
-  async create(data: Prisma.UserCreateInput) {
-    return this.prisma.user.create({
-      data,
-    });
-  }
-
-  async resetPassword(userId: string, resetPasswordDto: ResetPasswordDto) {
-    if (resetPasswordDto.newPassword !== resetPasswordDto.confirmNewPassword) {
-      throw new BadRequestException(
-        "New and confirmation password doesn't match",
-      );
-    }
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!user) throw new NotFoundException('User not found');
-
-    const passwordValid = await compare(
-      resetPasswordDto.oldPassword,
-      user?.password,
-    );
-
-    if (!passwordValid) {
-      throw new BadRequestException("Old password isn't valid");
-    }
-
-    const newPassword = await hash(resetPasswordDto.newPassword, passwordSalt);
-
-    return this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        password: newPassword,
-      },
-      select: PUBLIC_USER_FIELDS,
-    });
+  async findOneById(id: string) {
+    return this.getUserOrThrow({ id }, PUBLIC_USER_FIELDS);
   }
 
   async findOneByEmail(email: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: email },
+    return this.getUserOrThrow({ email }, PUBLIC_USER_FIELDS);
+  }
+
+  async findOneByIdWithRefresh(id: string) {
+    return this.getUserOrThrow({ id }, AUTH_REFRESH_FIELDS);
+  }
+
+  async findByEmailInternal(email: string) {
+    return this.prisma.user.findUnique({ where: { email } });
+  }
+
+  async create(data: RegisterDto) {
+    const existingUser = await this.findOneByEmail(data.email);
+
+    if (existingUser) {
+      throw new ConflictException('Email already in use');
+    }
+
+    const hashedPassword = await hash(data.password, passwordSalt);
+
+    return this.prisma.user.create({
+      data: {
+        ...data,
+        password: hashedPassword,
+        role: 'user',
+      },
+    });
+  }
+
+  async update(id: string, dto: UpdateUserDto) {
+    const currentUser = await this.getUserOrThrow({ id });
+
+    if (dto.email && dto.email !== currentUser.email) {
+      const emailExists = await this.prisma.user.findUnique({
+        where: { email: dto.email },
+      });
+      if (emailExists) throw new ConflictException('Email already in use');
+    }
+
+    return this.prisma.user.update({
+      where: { id },
+      data: dto,
       select: PUBLIC_USER_FIELDS,
     });
-    if (!user) throw new NotFoundException('User not found');
-    return user;
+  }
+
+  async delete(id: string) {
+    await this.getUserOrThrow({ id });
+    return this.prisma.user.delete({ where: { id } });
   }
 
   async updatePassword(userId: string, password: string) {
+    const hashed = await hash(password, passwordSalt);
     await this.prisma.user.update({
       where: {
         id: userId,
       },
       data: {
-        password,
+        password: hashed,
       },
     });
   }
 
-  private async findOneByIdOrFail(userId: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
+  async resetPassword(id: string, dto: ResetPasswordDto) {
+    const { oldPassword, newPassword, confirmNewPassword } = dto;
+
+    if (newPassword !== confirmNewPassword) {
+      throw new BadRequestException('Passwords do not match');
+    }
+
+    const user = await this.getUserOrThrow({ id });
+
+    const isMatch = await compare(oldPassword, user.password);
+    if (!isMatch) throw new BadRequestException('Invalid old password');
+
+    const hashedNewPassword = await hash(newPassword, passwordSalt);
+
+    return this.prisma.user.update({
+      where: { id },
+      data: { password: hashedNewPassword },
       select: PUBLIC_USER_FIELDS,
     });
-    if (!user) throw new NotFoundException('User not found');
+  }
+
+  async updateRefreshToken(id: string, refreshToken: string | null) {
+    const hashedToken = refreshToken
+      ? await hash(refreshToken, tokenSalt)
+      : null;
+    return this.prisma.user.update({
+      where: { id },
+      data: { refreshToken: hashedToken },
+    });
+  }
+
+  private async getUserOrThrow(
+    where: Prisma.UserWhereUniqueInput,
+    select?: Prisma.UserSelect,
+  ) {
+    const user = await this.prisma.user.findUnique({ where, select });
+    if (!user) throw new NotFoundException(`User not found`);
     return user;
-  }
-
-  async findOneByIdWithRefresh(userId: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { id: true, email: true, role: true, refreshToken: true },
-    });
-    if (!user) throw new NotFoundException('User not found');
-    return user;
-  }
-
-  async saveRefreshToken(userId: string, refreshToken: string) {
-    const hashed = await hash(refreshToken, 3);
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { refreshToken: hashed },
-    });
-  }
-
-  async clearRefreshToken(userId: string) {
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { refreshToken: null },
-    });
   }
 }

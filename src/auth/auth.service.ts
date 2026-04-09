@@ -1,17 +1,12 @@
-import {
-  Injectable,
-  UnauthorizedException,
-  ConflictException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { hash, compare } from 'bcrypt';
+import { compare } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 
 import { UsersService } from '../users/users.service';
 import { JwtPayload } from './types';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { passwordSalt } from 'src/global/constants/salt.constants';
 
 @Injectable()
 export class AuthService {
@@ -22,7 +17,9 @@ export class AuthService {
   ) {}
 
   async login(loginPayload: LoginDto) {
-    const user = await this.usersService.findOne(loginPayload.email);
+    const user = await this.usersService.findByEmailInternal(
+      loginPayload.email,
+    );
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -57,19 +54,7 @@ export class AuthService {
   }
 
   async register(registerPayload: RegisterDto) {
-    const existingUser = await this.usersService.findOne(registerPayload.email);
-
-    if (existingUser) {
-      throw new ConflictException('Email already in use');
-    }
-
-    const hashedPassword = await hash(registerPayload.password, passwordSalt);
-
-    const user = await this.usersService.create({
-      ...registerPayload,
-      password: hashedPassword,
-      role: 'user',
-    });
+    const user = await this.usersService.create(registerPayload);
 
     const { access_token, refresh_token } = await this.createTokens({
       sub: user.id,
@@ -77,7 +62,7 @@ export class AuthService {
       role: user.role,
     });
 
-    await this.usersService.saveRefreshToken(user.id, refresh_token);
+    await this.usersService.updateRefreshToken(user.id, refresh_token);
 
     return {
       user: {
@@ -109,7 +94,7 @@ export class AuthService {
       role: user.role,
     });
 
-    await this.usersService.saveRefreshToken(user.id, tokens.refresh_token);
+    await this.usersService.updateRefreshToken(user.id, tokens.refresh_token);
 
     return tokens;
   }
@@ -129,6 +114,6 @@ export class AuthService {
   }
 
   async logout(userId: string) {
-    await this.usersService.clearRefreshToken(userId);
+    await this.usersService.updateRefreshToken(userId, null);
   }
 }

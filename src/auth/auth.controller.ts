@@ -74,7 +74,7 @@ export class AuthController {
   @Public()
   @UseGuards(JwtRefreshGuard)
   @Post('/refresh')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NO_CONTENT)
   async refresh(
     @Req() req: { user: JwtRefreshPayload },
     @Res({ passthrough: true }) response: FastifyReply,
@@ -103,11 +103,11 @@ export class AuthController {
     @Req() req: { user: JwtPayload },
   ) {
     await this.authService.logout(req.user.sub);
-    await response.setCookie('access_token', '', {
+    response.setCookie('access_token', '', {
       ...ACCESS_COOKIE_OPTIONS,
       maxAge: 0,
     });
-    await response.setCookie('refresh_token', '', {
+    response.setCookie('refresh_token', '', {
       ...REFRESH_COOKIE_OPTIONS,
       maxAge: 0,
     });

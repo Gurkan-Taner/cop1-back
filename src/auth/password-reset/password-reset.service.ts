@@ -1,12 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { hash } from 'bcrypt';
+
 import { createHash, randomBytes } from 'crypto';
 
 import { PrismaService } from 'src/db/prisma.service';
 import { UsersService } from 'src/users/users.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { MailService } from 'src/mail/mail.service';
-import { passwordSalt } from 'src/global/constants/salt.constants';
 
 @Injectable()
 export class PasswordResetService {
@@ -58,8 +57,7 @@ export class PasswordResetService {
       throw new BadRequestException('Token expired');
     }
 
-    const hashed = await hash(dto.password, passwordSalt);
-    await this.usersService.updatePassword(record.userId, hashed);
+    await this.usersService.updatePassword(record.userId, dto.password);
 
     await this.prisma.passwordResetToken.delete({ where: { id: record.id } });
   }
