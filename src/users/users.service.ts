@@ -51,7 +51,9 @@ export class UsersService {
   }
 
   async create(data: RegisterDto) {
-    const existingUser = await this.findOneByEmail(data.email);
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: data.email },
+    });
 
     if (existingUser) {
       throw new ConflictException('Email already in use');
@@ -65,6 +67,7 @@ export class UsersService {
         password: hashedPassword,
         role: 'user',
       },
+      select: PUBLIC_USER_FIELDS,
     });
   }
 

@@ -19,6 +19,7 @@ import { Roles } from 'src/auth/decorators/role.decorator';
 import { Role } from 'src/auth/enum/role.enum';
 import { RolesGuard } from 'src/auth/guards/role.guard';
 import { JwtPayload } from 'src/auth/types';
+import type { RegisterDto } from 'src/auth/dto/register.dto';
 
 @UseGuards(RolesGuard)
 @Controller('/api/users')
@@ -29,6 +30,12 @@ export class UsersController {
   @Roles(Role.Admin)
   async getUsersList() {
     return await this.usersService.findAll();
+  }
+
+  @Post('/')
+  @Roles(Role.Admin)
+  async createUser(@Body() createUserDto: RegisterDto) {
+    return await this.usersService.create(createUserDto);
   }
 
   @Get('/me')
