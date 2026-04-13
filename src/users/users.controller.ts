@@ -76,6 +76,12 @@ export class UsersController {
     return await this.usersService.update(id, updateUserDto);
   }
 
+  @Delete('/:id')
+  @Roles(Role.Admin)
+  async deleteUserWithId(@Param('id') id: string) {
+    return await this.usersService.delete(id);
+  }
+
   @Delete('/')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteUser(@Req() req: { user: JwtPayload }) {
